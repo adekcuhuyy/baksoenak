@@ -113,8 +113,8 @@
 
 | Aspek | Spesifikasi |
 |---|---|
-| Bentuk | 3–4 tetesan merah dengan panjang berbeda, ujung membulat, menggantung dari garis horizontal |
-| Warna | Isi `--sauce-500` (`#D32F2F`), opsional kilau tipis `--sauce-700` |
+| Bentuk | Pita saus berombak dengan **9 tetesan berbeda panjang**, ujung membulat/embun, tetesan lepas, dan percikan — menyerupai tekstur *dripping paint* (gambar baru dibuat sendiri, bukan salinan aset berhak cipta) |
+| Warna | Isi `--sauce-500` (`#D32F2F`), `--sauce-700` (`#C62828`) untuk pita/tetes lepas, `--sauce-900` (`#8E1B1B`) untuk tepi gelap, kilau `#FFCDD2` transparan |
 | Aset | SVG lokal: `public/images/saus-drip.svg` (selaras struktur `SPEC.md` Lampiran A) |
 | Penempatan 1 | Garis tipis di bawah navbar, tetesan jatuh ke arah hero |
 | Penempatan 2 | Sudut kanan bawah panel hero (desktop), di bawah CTA (mobile, ukuran 60%) |
@@ -147,7 +147,7 @@
 ### 5.3 Toolbar (Pencarian, Filter, Sorting)
 - Judul section: **"Katalog Menu"** (`H2`) + teks hasil: *"Menampilkan 5/5 menu"* (`--ink-600`).
 - **Search**: input penuh lebar di mobile; placeholder *"Cari nama atau deskripsi..."*; ikon kaca pembesar di kiri; label terlihat atau `sr-only`.
-- **Filter kategori**: `<select>` dengan opsi `Semua`, `Makanan Utama`, `Snack`, `Minuman`, `Dessert`, `Lainnya` (sama dengan `SPEC.md` §4.2).
+- **Filter kategori**: `<select>` dengan opsi `Semua`, `Makanan Utama`, `Snack`, `Minuman`, `Dessert` (sama dengan `SPEC.md` §4.2).
 - **Sorting**: `<select>` dengan opsi `Nama A–Z`, `Nama Z–A`, `Harga Terendah`, `Harga Tertinggi`, `Stok Terbanyak`.
 - Mobile: search baris 1 penuh; filter & sort berbagi baris 2 (50:50, gap 12 px).
 - Desktop: ketiga kontrol sejajar dalam satu baris, search lebih lebar (flex-grow).
@@ -163,25 +163,27 @@
   4. Deskripsi 2 baris (`--ink-600`).
   5. Baris harga (`--ink-900`, 800) + stok: `Stok: 25` (`--stock-ok`) atau `Stok: Habis` (`--sauce-900`, bold).
   6. Tombol WhatsApp penuh lebar.
-- Kartu dengan stok habis: tetap tampil, opasitas gambar 0.75, **tanpa** menonaktifkan tombol.
+- Kartu dengan stok habis: tetap tampil, opasitas gambar 0.75, tombol WA berubah menjadi `<button disabled>` berlabel "Stok habis" (tanpa `href`).
 
 ### 5.5 Tombol WhatsApp
 - Teks: **"Pesan via WhatsApp"** + ikon WA di kiri.
 - Warna latar `--wa-700`, teks putih, radius 8 px, tinggi 48 px, lebar penuh dalam kartu.
 - Hover: latar lebih gelap `#09633F`; focus: outline `--focus` 3 px + offset 2 px; active: turun 1 px.
-- Membuka deeplink `wa.me` sesuai `SPEC.md` §4.4 (nomor demo). Pesan memuat nama + harga Rupiah.
-- Bukan `<button>` bila langsung membuka link — gunakan `<a>` dengan `target="_blank"` + `rel="noopener noreferrer"` dan `aria-label` yang menyebut nama produk.
+- Membuka deeplink `wa.me` sesuai `SPEC.md` §4.4 (nomor demo E.164 fiktif `15550100` = +1 555-0100). Pesan memuat nama + harga Rupiah dan di-encode dengan `encodeURIComponent`.
+- Bukan `<button>` bila langsung membuka link — gunakan `<a>` dengan `target="_blank"` + `rel="noopener noreferrer"` dan `aria-label` yang menyebut nama produk. Kecuali stok habis / nomor invalid → `<button disabled>`.
 - Dilarang memakai hijau terang `#25D366` sebagai latar dengan teks putih (kontras gagal).
 
 ### 5.6 Dashboard Demo (Mode Pengelola)
-- Header halaman: **"Dashboard Demo — Mode Pengelola"** + chip `DEMO` + tombol **"↺ Reset ke Data Contoh"** (outline `--sauce-900`).
-- **Ringkasan (3 stat card)**: `Total Produk: 5`, `Total Stok: 155`, `Unggulan: 2` — angka besar `--ink-900`, label kecil `--ink-600`; latar `--cream-50`, border `--cream-300`.
+- Header halaman: **"Dashboard Demo — Mode Pengelola"** + chip `DEMO` + grup tombol outline `--sauce-900`: **"↧ Ekspor JSON"**, **"↥ Impor JSON"**, **"↺ Reset ke Data Contoh"**.
+- Di bawah header ada status data (`role="status"`, `aria-live="polite"`): pesan sukses/error untuk ekspor/impor/reset dan pemberitahuan saat data tersimpan rusak dipulihkan. Teks error memakai `--sauce-900` + tebal; teks biasa `--ink-600` (`.muted`). Tombol impor membuka file picker `.json` tersembunyi; validasi gagal tidak mengubah data.
+- **Ringkasan (3 stat card)**: `Total Produk: 5`, `Total Stok: 188`, `Kategori: 3` — angka besar `--ink-900`, label kecil `--ink-600`; latar `--cream-50`, border `--cream-300`.
+- **Rincian kategori**: chip pill di bawah ringkasan berisi nama kategori yang dipakai + jumlah produk per kategori (`Makanan Utama 1`, `Snack 2`, `Minuman 2`), diperbarui langsung setelah CRUD.
 - **Form produk** (panel kiri di desktop, bagian atas di mobile): field `Nama`, `Kategori`, `Harga (Rp)`, `Stok`, `Deskripsi`, checkbox `Unggulan`, `Image URL`, tombol **Simpan** (`--sauce-700`) + **Batal** (outline).
   - Field wajib ditandai `*`; pesan error muncul **di bawah field** dengan teks `--sauce-900` + ikon ⚠, bukan alert browser.
   - Contoh pesan: *"Harga tidak boleh kurang dari 0."*, *"Stok harus bilangan bulat."*, *"Nama minimal 3 karakter."*
 - **Daftar produk** (panel kanan di desktop, bawah di mobile): tabel di desktop; di mobile berubah menjadi **kartu ringkas per produk** (nama + badge, kategori · harga, stok, tombol ikon ✎ Edit dan 🗑 Hapus) agar tidak perlu scroll horizontal.
-- Tombol ikon memiliki `aria-label` lengkap, mis. `aria-label="Ubah Bakso Sapi Spesial"`.
-- Konfirmasi hapus memakai dialog konfirmasi sederhana dengan teks jelas: *"Hapus Bakso Sapi Spesial? Tindakan ini tidak bisa dibatalkan pada data demo."*
+- Tombol ikon memiliki `aria-label` lengkap, mis. `aria-label="Ubah Bakso Beranak"`.
+- Konfirmasi hapus memakai dialog konfirmasi sederhana dengan teks jelas: *"Hapus Bakso Beranak? Tindakan ini tidak bisa dibatalkan pada data demo."*
 - Toast sukses/error muncul di kanan bawah, latar `--ink-900`, teks putih, auto-hilang ~3 detik, bisa ditutup manual.
 
 ### 5.7 Footer
@@ -256,18 +258,18 @@
 │ [   gambar 4:3   ] │ │ [   gambar 4:3   ] │ │ [   gambar 4:3   ] │
 │ ⭐Unggulan  Makanan│ │             Makanan│ │              Snack │
 │                 Utama│ │                Utama│ │                    │
-│ Bakso Sapi Spesial │ │ Bakso Ayam Pedas   │ │ Keripik Singkong   │
-│ Kuah kaldu bening, │ │ Pedas, kenyal,     │ │ Balado renyah,     │
-│ disajikan hangat.  │ │ bikin nagih.       │ │ cocok teman ngopi. │
-│ Rp15.000   Stok:25 │ │ Rp14.000   Stok:18 │ │ Rp8.000    Stok:40 │
+│ Bakso Beranak      │ │ Bakso Aci         │ │ Pangsit Goreng     │
+│ Bakso besar berisi │ │ Kenyal dari aci,  │ │ Renyah digoreng,   │
+│ bakso kecil, kuah  │ │ bumbu pedas manis.│ │ enak dicocol kuah. │
+│ Rp18.000   Stok:20 │ │ Rp10.000   Stok:35 │ │ Rp12.000   Stok:28 │
 │ [ Pesan via WA 🟢 ]│ │ [ Pesan via WA 🟢 ]│ │ [ Pesan via WA 🟢 ]│
 └────────────────────┘ └────────────────────┘ └────────────────────┘
 
 ┌────────────────────┐ ┌────────────────────┐
 │ [   gambar 4:3   ] │ │ [   gambar 4:3   ] │
-│ ⭐Unggulan Minuman │ │              Dessert│
-│ Es Teh Manis       │ │ Pudding Karamel    │
-│ Rp5.000    Stok:60 │ │ Rp10.000   Stok:12 │
+│ ⭐Unggulan Minuman │ │             Minuman│
+│ Es Teh Manis       │ │ Es Jeruk           │
+│ Rp5.000    Stok:60 │ │ Rp7.000    Stok:45 │
 │ [ Pesan via WA 🟢 ]│ │ [ Pesan via WA 🟢 ]│
 └────────────────────┘ └────────────────────┘
 
@@ -284,13 +286,15 @@
 └──────────────────────────────────────────────────────────────────────────────┘
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│ Dashboard Demo — Mode Pengelola          [ ↺ Reset ke Data Contoh ]          │
+│ Dashboard Demo — Mode Pengelola   [↧ Ekspor][↥ Impor][↺ Reset ke Contoh]     │
+│ status: "Data rusak ... 5 produk contoh dipulihkan." / "Import ... berhasil" │
 └──────────────────────────────────────────────────────────────────────────────┘
 
 ┌───────────────────┐ ┌───────────────────┐ ┌───────────────────┐
-│ TOTAL PRODUK      │ │ TOTAL STOK        │ │ UNGGULAN          │
-│        5          │ │       155         │ │        2          │
+│ TOTAL PRODUK      │ │ TOTAL STOK        │ │ KATEGORI          │
+│        5          │ │       188         │ │        3          │
 └───────────────────┘ └───────────────────┘ └───────────────────┘
+│ Makanan Utama 1 · Snack 2 · Minuman 2  ← rincian kategori (panel)          │
 
 ┌──────────────────────────────┐ ┌─────────────────────────────────────────────┐
 │ Form Produk                  │ │ Daftar Produk (5)                           │
@@ -343,10 +347,10 @@
 ┌────────────────────────────────┐
 │ [      gambar 4:3 penuh      ] │
 │ ⭐Unggulan   Makanan Utama    │
-│ Bakso Sapi Spesial            │  H3
-│ Kuah kaldu bening, disajikan  │  2 baris
-│ hangat.                       │
-│ Rp15.000          Stok: 25    │
+│ Bakso Beranak                 │  H3
+│ Bakso besar berisi bakso      │  2 baris
+│ kecil, kuah kaldu hangat.     │
+│ Rp18.000          Stok: 20    │
 │ [   Pesan via WhatsApp 🟢   ] │  penuh lebar, 48px
 └────────────────────────────────┘
               ↓
@@ -377,13 +381,15 @@
 
 ┌────────────────────────────────┐
 │ Dashboard Demo · MODE PENGELOLA│
-│ [  ↺ Reset ke Data Contoh  ]  │
+│ [↧ Ekspor] [↥ Impor] [↺ Reset]│
+│ status data (sukses / error)   │
 └────────────────────────────────┘
 
 ┌───────────┬───────────┬────────┐
-│ Produk    │ Stok      │ ⭐     │  ← 3 stat chip
-│    5      │   155     │   2    │
+│ Produk    │ Stok      │Kategori│  ← 3 stat chip
+│    5      │   188     │   3    │
 └───────────┴───────────┴────────┘
+│ Makanan Utama 1 · Snack 2 · Minuman 2 │  ← rincian kategori
 
 ┌────────────────────────────────┐
 │ Form Produk                   │
@@ -404,9 +410,9 @@
 ┌────────────────────────────────┐
 │ Daftar Produk (5)             │
 │ ┌────────────────────────────┐ │
-│ │ Bakso Sapi Spesial  ⭐     │ │  ← kartu ringkas,
-│ │ Makanan Utama · Rp15.000   │ │     bukan tabel
-│ │ Stok 25        [✎] [🗑]   │ │
+│ │ Bakso Beranak  ⭐         │ │  ← kartu ringkas,
+│ │ Makanan Utama · Rp18.000   │ │     bukan tabel
+│ │ Stok 20        [✎] [🗑]   │ │
 │ └────────────────────────────┘ │
 │ ┌────────────────────────────┐ │
 │ │ Es Teh Manis  ⭐           │ │
@@ -429,7 +435,7 @@
 | Search + filter + sorting | F-03, F-04, F-05, AC-2, AC-3 |
 | Tombol WhatsApp hijau gelap | F-06, NFR-03, AC-4 |
 | Form + tabel/kartu CRUD | F-07, AC-5 |
-| 3 stat card (5 / 155 / 2) | F-08, AC-6 |
+| 3 stat card (5 / 188 / 3) + rincian kategori | F-08, AC-6 |
 | Empty state & toast error | F-10, R-05, NFR-12 |
 | Aset SVG lokal + font sistem | NFR-05, NFR-06 |
 | Label `DEMO` + footer data fiksi | R-02, NFR-04 |
@@ -456,6 +462,8 @@
 - [ ] Motif saus meleleh tampil, tidak menutupi konten, dan `aria-hidden`.
 - [ ] Checklist aksesibilitas di §7 tercentang.
 - [ ] Tidak ada font/CDN/ikon eksternal yang dimuat.
-- [ ] Angka ringkasan UI persis `5 / 155 / 2` pada kondisi awal.
+- [ ] Angka ringkasan UI persis `5 / 188 / 3` pada kondisi awal, dengan rincian `Makanan Utama 1`, `Snack 2`, `Minuman 2`.
+- [ ] Grup **Ekspor / Impor / Reset** terlihat di header dashboard, dengan area status `aria-live="polite"` di bawahnya.
+- [ ] Saat data tersimpan rusak, toast + status inline muncul dan katalog tetap menampilkan 5 produk pulihkan.
 
 > Implementasi UI dimulai setelah `SPEC.md` dan dokumen ini disetujui — pada Iterasi I-0/I-2 sesuai rencana `SPEC.md` §9.

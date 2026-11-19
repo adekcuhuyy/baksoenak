@@ -2,12 +2,13 @@
 // Modul ini MURNI (tidak mengakses localStorage). Semua data fiksi & non-pribadi
 // sesuai SPEC.md §4.3.
 
+// Empat kategori yang tersedia; 3 di antaranya dipakai 5 produk contoh fiktif.
+// 'Dessert' sengaja tetap tersedia untuk form tambah/edit.
 export const CATEGORIES = Object.freeze([
   'Makanan Utama',
   'Snack',
   'Minuman',
   'Dessert',
-  'Lainnya',
 ]);
 
 export const SORT_OPTIONS = Object.freeze([
@@ -18,41 +19,48 @@ export const SORT_OPTIONS = Object.freeze([
   { value: 'stok-desc', label: 'Stok Terbanyak' },
 ]);
 
-// Nomor WA placeholder (bukan nomor pribadi). Disimpan lewat store.js.
-export const DEFAULT_WHATSAPP_NUMBER = '081200000000';
+// Nomor WA demo (bukan rahasia, bukan pribadi). Disimpan sebagai konfigurasi
+// di store.js. Format E.164 tanpa '+': +1 555-0100.
+// Rentang NANP 555-0100…555-0199 dicadangkan secara resmi untuk nomor FIKTIF,
+// sehingga tidak mungkin menjadi pelanggan/akun WhatsApp siapa pun.
+// Wajib diganti dengan nomor pemilik sebelum dipakai produksi.
+export const DEFAULT_WHATSAPP_NUMBER = '15550100';
 
 const IMAGE_PATH = /^images\/[A-Za-z0-9._-]+$/;
-const PHONE_NUMBER = /^08\d{6,12}$/;
+// E.164: 8–15 digit, diawali kode negara (1–9), bukan 0. Tanda '+' opsional.
+const PHONE_NUMBER = /^\+?[1-9]\d{7,14}$/;
 
+// Gambar adalah SVG original buatan lokal di public/images/ — bukan aset
+// berhak cipta dan tidak di-fetch dari internet (NFR-06).
 const SEED_PRODUCTS = Object.freeze([
   {
     id: 'p-001',
-    nama: 'Bakso Sapi Spesial',
+    nama: 'Bakso Beranak',
     kategori: 'Makanan Utama',
-    harga: 15000,
-    stok: 25,
-    deskripsi: 'Bakso sapi kenyal dengan kuah kaldu bening, disajikan hangat.',
+    harga: 18000,
+    stok: 20,
+    deskripsi: 'Bakso sapi besar berisi bakso kecil, disajikan dengan kuah kaldu hangat.',
     imageUrl: 'images/bakso.svg',
     unggulan: true,
   },
   {
     id: 'p-002',
-    nama: 'Bakso Ayam Pedas',
-    kategori: 'Makanan Utama',
-    harga: 14000,
-    stok: 18,
-    deskripsi: 'Bakso ayam dengan kuah pedas merah yang bikin nagih.',
-    imageUrl: 'images/ayam-pedas.svg',
+    nama: 'Bakso Aci',
+    kategori: 'Snack',
+    harga: 10000,
+    stok: 35,
+    deskripsi: 'Bakso kenyal dari tepung aci dengan bumbu pedas manis khas Bandung.',
+    imageUrl: 'images/bakso.svg',
     unggulan: false,
   },
   {
     id: 'p-003',
-    nama: 'Keripik Singkong Balado',
+    nama: 'Pangsit Goreng',
     kategori: 'Snack',
-    harga: 8000,
-    stok: 40,
-    deskripsi: 'Keripik singkong renyah berbalut bumbu balado pedas manis.',
-    imageUrl: 'images/keripik.svg',
+    harga: 12000,
+    stok: 28,
+    deskripsi: 'Pangsit renyah digoreng, enak dicocol saus pedas atau dimakan langsung.',
+    imageUrl: 'images/pangsit.svg',
     unggulan: false,
   },
   {
@@ -67,12 +75,12 @@ const SEED_PRODUCTS = Object.freeze([
   },
   {
     id: 'p-005',
-    nama: 'Pudding Karamel',
-    kategori: 'Dessert',
-    harga: 10000,
-    stok: 12,
-    deskripsi: 'Pudding lembut dengan saus karamel manis di atasnya.',
-    imageUrl: 'images/pudding.svg',
+    nama: 'Es Jeruk',
+    kategori: 'Minuman',
+    harga: 7000,
+    stok: 45,
+    deskripsi: 'Jeruk segar diperas langsung dengan es, rasanya manis dan menyegarkan.',
+    imageUrl: 'images/es-jeruk.svg',
     unggulan: false,
   },
 ]);
@@ -83,7 +91,37 @@ export function getSeedProducts() {
 }
 
 export function isValidWhatsappNumber(value) {
-  return PHONE_NUMBER.test(String(value));
+  return PHONE_NUMBER.test(String(value ?? '').trim());
+}
+
+/**
+ * Fungsi MURNI: susun deeplink wa.me dari nomor tujuan + produk.
+ * Nomor divalidasi format E.164 internasional, lalu tanda '+' dibuang karena
+ * wa.me memakai digit saja. Pesan dienkripsi dengan encodeURIComponent.
+ * Tidak menyentuh DOM maupun localStorage.
+ *
+ * @param {string} nomor cth. '15550100' atau '+15550100' (E.164)
+ * @param {{ nama: string, harga: number }} produk
+ * @returns {string} URL https://wa.me/...?text=...
+ * @throws {Error} bila nomor atau produk tidak valid
+ */
+export function buildWhatsAppUrl(nomor, produk) {
+  if (!isValidWhatsappNumber(nomor)) {
+    throw new Error('Nomor WhatsApp harus E.164 internasional, cth. 15550100.');
+  }
+  if (
+    !produk ||
+    typeof produk.nama !== 'string' ||
+    !produk.nama.trim() ||
+    typeof produk.harga !== 'number' ||
+    !Number.isFinite(produk.harga)
+  ) {
+    throw new Error('Data produk tidak valid untuk pesan WhatsApp.');
+  }
+
+  const digits = String(nomor).trim().replace(/^\+/, '');
+  const message = `Halo, saya mau pesan ${produk.nama} (${formatRupiah(produk.harga)}).`;
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }
 
 export function formatRupiah(value) {
@@ -138,8 +176,9 @@ export function validateProduct(raw) {
   }
 
   const harga = Number(hargaRaw);
-  if (!hargaRaw || !Number.isInteger(harga) || harga < 0) {
-    errors.harga = 'Harga harus bilangan bulat lebih dari atau sama dengan 0.';
+  // Harga: angka apa pun >= 0 (boleh desimal); stok tetap bulat di bawah.
+  if (!hargaRaw || !Number.isFinite(harga) || harga < 0) {
+    errors.harga = 'Harga harus angka lebih dari atau sama dengan 0.';
   }
 
   const stok = Number(stokRaw);
@@ -167,4 +206,112 @@ export function validateProduct(raw) {
       unggulan: Boolean(raw.unggulan),
     },
   };
+}
+
+/**
+ * Fungsi MURNI: parse + validasi teks JSON menjadi array produk.
+ * Dipakai dua tempat: saat memuat localStorage dan saat import file JSON.
+ * JSON.parse dibungkus try/catch; struktur/tipe dicek isProduct, lalu nilai
+ * dicek validateProduct. Tidak menyentuh DOM maupun localStorage.
+ *
+ * @param {string} text
+ * @returns {{ products: Array|null, error: string }} error '' bila valid
+ */
+export function parseProductsJson(text) {
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return { products: null, error: 'JSON tidak valid.' };
+  }
+
+  if (!Array.isArray(parsed)) {
+    return { products: null, error: 'JSON harus berupa array produk.' };
+  }
+
+  const products = [];
+  const seen = new Set();
+  for (let index = 0; index < parsed.length; index += 1) {
+    const item = parsed[index];
+    const label = `Produk ke-${index + 1}`;
+
+    if (!isProduct(item)) {
+      return { products: null, error: `${label} memiliki field hilang atau bertipe salah.` };
+    }
+    if (!item.id.trim()) {
+      return { products: null, error: `${label} memiliki id kosong.` };
+    }
+
+    const { errors, value } = validateProduct(item);
+    const firstError = Object.values(errors)[0];
+    if (firstError) {
+      return { products: null, error: `${label}: ${firstError}` };
+    }
+    if (seen.has(value.id)) {
+      return { products: null, error: `${label}: id "${value.id}" duplikat.` };
+    }
+
+    seen.add(value.id);
+    products.push(value);
+  }
+
+  return { products, error: '' };
+}
+
+/** Serialisasi array produk ke JSON rapi untuk diunduh. MURNI. */
+export function serializeProducts(products) {
+  return JSON.stringify(products, null, 2);
+}
+
+/**
+ * Fungsi MURNI: cari → filter kategori → sort.
+ *
+ * Tidak menyentuh state global, DOM, atau localStorage; array input juga tidak
+ * dimutasi. Jadi bisa diuji langsung: filterProducts(data, opsi) → array baru.
+ *
+ * @param {Array} products daftar produk
+ * @param {{ search?: string, category?: string, sort?: string }} options
+ *   sort: 'nama-asc' | 'nama-desc' | 'harga-asc' | 'harga-desc' | 'stok-desc'
+ * @returns {Array} produk yang cocok, sudah diurutkan
+ */
+export function filterProducts(
+  products,
+  { search = '', category = 'Semua', sort = 'nama-asc' } = {},
+) {
+  const list = Array.isArray(products) ? products : [];
+  const query = String(search).trim().toLowerCase();
+
+  const filtered = list.filter((product) => {
+    const matchesSearch =
+      !query ||
+      String(product.nama).toLowerCase().includes(query) ||
+      String(product.deskripsi).toLowerCase().includes(query);
+    const matchesCategory = category === 'Semua' || product.kategori === category;
+    return matchesSearch && matchesCategory;
+  });
+
+  const result = [...filtered];
+  switch (sort) {
+    case 'nama-desc':
+      result.sort((a, b) =>
+        String(b.nama).localeCompare(String(a.nama), 'id', { sensitivity: 'base' }),
+      );
+      break;
+    case 'harga-asc':
+      result.sort((a, b) => a.harga - b.harga);
+      break;
+    case 'harga-desc':
+      result.sort((a, b) => b.harga - a.harga);
+      break;
+    case 'stok-desc':
+      result.sort((a, b) => b.stok - a.stok);
+      break;
+    case 'nama-asc':
+    default:
+      result.sort((a, b) =>
+        String(a.nama).localeCompare(String(b.nama), 'id', { sensitivity: 'base' }),
+      );
+      break;
+  }
+  return result;
 }

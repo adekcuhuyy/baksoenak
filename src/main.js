@@ -1,10 +1,15 @@
 // main.js — entry point + orchestrasi state, event, dan alur data.
-// Modul ini menggantikan peran app.js lama: satu tempat untuk pipeline
-// cari → filter → sort, CRUD, dan perpindahan view.
+// Modul ini menggantikan peran app.js lama: CRUD, event, dan perpindahan view.
+// Pipeline cari → filter → sort ada di filterProducts() (products.js).
 
 import './style.css';
-import { validateProduct } from './products.js';
-import { loadProducts, saveProducts, resetProducts } from './store.js';
+import {
+  filterProducts,
+  parseProductsJson,
+  serializeProducts,
+  validateProduct,
+} from './products.js';
+import { loadProductsWithStatus, saveProducts, resetProducts } from './store.js';
 import {
   populateControls,
   renderProducts,
@@ -17,6 +22,7 @@ import {
   fillForm,
   clearForm,
   setEditingState,
+  showDataStatus,
   showToast,
   setView,
 } from './ui.js';
@@ -32,44 +38,12 @@ const state = {
   view: 'katalog',
 };
 
-/** Pipeline urut: pencarian → filter kategori → sorting (T-2.1). */
-function getVisibleProducts() {
-  const query = state.search.trim().toLowerCase();
-
-  const filtered = state.products.filter((product) => {
-    const matchesSearch =
-      !query ||
-      product.nama.toLowerCase().includes(query) ||
-      product.deskripsi.toLowerCase().includes(query);
-    const matchesCategory =
-      state.category === 'Semua' || product.kategori === state.category;
-    return matchesSearch && matchesCategory;
-  });
-
-  const result = [...filtered];
-  switch (state.sort) {
-    case 'nama-desc':
-      result.sort((a, b) => b.nama.localeCompare(a.nama, 'id', { sensitivity: 'base' }));
-      break;
-    case 'harga-asc':
-      result.sort((a, b) => a.harga - b.harga);
-      break;
-    case 'harga-desc':
-      result.sort((a, b) => b.harga - a.harga);
-      break;
-    case 'stok-desc':
-      result.sort((a, b) => b.stok - a.stok);
-      break;
-    case 'nama-asc':
-    default:
-      result.sort((a, b) => a.nama.localeCompare(b.nama, 'id', { sensitivity: 'base' }));
-      break;
-  }
-  return result;
-}
-
 function renderCatalog() {
-  const visible = getVisibleProducts();
+  const visible = filterProducts(state.products, {
+    search: state.search,
+    category: state.category,
+    sort: state.sort,
+  });
   renderProducts(visible);
   renderEmptyState(visible.length === 0);
   renderResultCount(visible.length, state.products.length);
@@ -92,7 +66,7 @@ function commit(nextProducts, successMessage) {
   renderAll();
 
   if (!saved) {
-    showToast('Gagal menyimpan, perubahan hanya di sesi ini.');
+    showToast('Gagal menyimpan, perubahan hanya berlaku saat ini.');
   } else if (successMessage) {
     showToast(successMessage);
   }
@@ -132,6 +106,67 @@ function handleDelete(id) {
     setEditingState(false);
   }
   commit(state.products.filter((item) => item.id !== id), 'Produk dihapus ✓');
+}
+
+/** Unduh seluruh produk sebagai file JSON lokal (tanpa server). */
+function handleExport() {
+  try {
+    const blob = new Blob([serializeProducts(state.products)], {
+      type: 'application/json;charset=utf-8',
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'baksoenak-products.json';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+
+    const message = `${state.products.length} produk diekspor ke baksoenak-products.json.`;
+    showDataStatus(message);
+    showToast('Ekspor JSON siap ✓');
+  } catch {
+    showDataStatus('Ekspor gagal: browser tidak mendukung unduhan file.', true);
+    showToast('Ekspor gagal.');
+  }
+}
+
+/** Impor file JSON: validasi dulu, baru timpa data setelah konfirmasi. */
+async function handleImport(event) {
+  const input = event.target;
+  const file = input.files?.[0];
+  input.value = ''; // izinkan mengimpor ulang file yang sama.
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const { products, error } = parseProductsJson(text);
+    if (error) {
+      const message = `Import gagal: ${error} Data tidak diubah.`;
+      showDataStatus(message, true);
+      showToast(message);
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Ganti ${state.products.length} produk saat ini dengan ${products.length} produk dari "${file.name}"?`,
+    );
+    if (!confirmed) {
+      showDataStatus('Import dibatalkan; data tidak diubah.');
+      return;
+    }
+
+    state.editingId = null;
+    clearForm();
+    setEditingState(false);
+    commit(products, `Import ${products.length} produk berhasil ✓`);
+    showDataStatus(`${products.length} produk berhasil diimpor dari ${file.name}.`);
+  } catch {
+    const message = 'Import gagal: file tidak dapat dibaca.';
+    showDataStatus(message, true);
+    showToast(message);
+  }
 }
 
 function clearFilters() {
@@ -192,6 +227,9 @@ function bindEvents() {
 
   byId('clearFilters').addEventListener('click', clearFilters);
   byId('productForm').addEventListener('submit', handleSubmit);
+  byId('exportButton').addEventListener('click', handleExport);
+  byId('importButton').addEventListener('click', () => byId('importFile').click());
+  byId('importFile').addEventListener('change', handleImport);
 
   byId('cancelButton').addEventListener('click', () => {
     state.editingId = null;
@@ -209,6 +247,7 @@ function bindEvents() {
     clearForm();
     setEditingState(false);
     commit(resetProducts(), 'Data contoh dipulihkan ✓');
+    showDataStatus('Reset demo selesai: 5 produk contoh dipulihkan.');
   });
 
   document.querySelectorAll('[data-view-link]').forEach((link) => {
@@ -226,10 +265,17 @@ function bindEvents() {
 }
 
 function initApp() {
-  state.products = loadProducts();
+  const loaded = loadProductsWithStatus();
+  state.products = loaded.products;
   populateControls();
   renderAll();
   bindEvents();
+
+  if (loaded.recovered) {
+    const message = `Data tersimpan rusak (${loaded.error}). 5 produk contoh dipulihkan.`;
+    showDataStatus(message, true);
+    showToast(message);
+  }
 
   const initialView = window.location.hash === '#dashboard' ? 'dashboard' : 'katalog';
   state.view = initialView;

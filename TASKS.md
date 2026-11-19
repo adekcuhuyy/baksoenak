@@ -67,7 +67,7 @@
 - **Berkas yang mungkin berubah:** `index.html`, `src/styles.css`, `public/images/saus-drip.svg`
 
 ### T-0.4 — Token desain & konfigurasi WA demo
-- **Deskripsi:** Terapkan design token `UI-SPEC.md` §3 (krem, merah saus, font sistem, spacing, breakpoint) dan siapkan nomor WA placeholder `081200000000`.
+- **Deskripsi:** Terapkan design token `UI-SPEC.md` §3 (krem, merah saus, font sistem, spacing, breakpoint) dan siapkan nomor WA placeholder `15550100` (+1 555-0100, rentang fiktif NANP `555-01xx`).
 - **AC:**
   - [ ] Latar krem `#FBF4E6`, teks `#2B1A12`, aksen merah `#C62828` terpakai konsisten.
   - [ ] Font sans-serif berasal dari sistem lokal; **tidak ada** `@import`/link font CDN.
@@ -83,7 +83,7 @@
 - **Deskripsi:** Definisikan entitas `Product` dan isi 5 data contoh persis sesuai `SPEC.md` §4.3.
 - **AC:**
   - [ ] Tepat 5 produk dengan nama, kategori, harga, stok, dan nilai `unggulan` sesuai tabel seed.
-  - [ ] Total stok seed = **155**; jumlah unggulan = **2**.
+  - [ ] Total stok seed = **188**; kategori terpakai = **3**; jumlah unggulan = **2**.
   - [ ] Semua data bersifat fiksi; tidak ada nama/nomor/alamat pribadi.
 - **Berkas yang mungkin berubah:** `src/data.js`
 - **Trace:** F-01, AC-1, NFR-04
@@ -134,7 +134,7 @@
 - **Deskripsi:** Pasang input cari, select kategori, dan select sorting sesuai `UI-SPEC.md` §5.3.
 - **AC:**
   - [ ] Placeholder search: *"Cari nama atau deskripsi..."*
-  - [ ] Opsi kategori: Semua, Makanan Utama, Snack, Minuman, Dessert, Lainnya.
+  - [ ] Opsi kategori: Semua, Makanan Utama, Snack, Minuman, Dessert.
   - [ ] Opsi sorting: Nama A–Z, Nama Z–A, Harga Terendah, Harga Tertinggi, Stok Terbanyak.
   - [ ] Mobile: search penuh di baris 1, filter + sort 50:50 di baris 2; desktop: sejajar.
   - [ ] Setiap kontrol punya `<label>` atau `aria-label`.
@@ -145,8 +145,8 @@
 - **Deskripsi:** Cocokkan kata kunci terhadap `nama` dan `deskripsi` tanpa memperhatikan huruf besar/kecil.
 - **AC:**
   - [ ] `bakso` → tepat 2 produk.
-  - [ ] `pedas` → menemukan "Bakso Ayam Pedas".
-  - [ ] `KALDU` → menemukan "Bakso Sapi Spesial" (deskripsi mengandung "kaldu").
+  - [ ] `pangsit` → menemukan "Pangsit Goreng".
+  - [ ] `KALDU` → menemukan "Bakso Beranak" (deskripsi mengandung "kaldu").
   - [ ] Kolom kosong → kembali menampilkan 5 produk.
 - **Berkas yang mungkin berubah:** `src/app.js`
 - **Trace:** F-03, AC-2
@@ -167,10 +167,11 @@
 ### T-3.1 — Deeplink & pesan otomatis
 - **Deskripsi:** Bangun URL `wa.me` dengan nomor demo dan pesan yang memuat nama + harga produk.
 - **AC:**
-  - [ ] Link mengarah ke `https://wa.me/081200000000?text=...`.
-  - [ ] Pesan mengandung nama produk dan harga terformat, mis. `Halo, saya mau pesan Bakso Sapi Spesial (Rp15.000).`
-  - [ ] Karakter pesan di-encode dengan benar (spasi & tanda baca tidak merusak URL).
-  - [ ] Nomor divalidasi berawalan `08` sebelum link dibuat.
+  - [ ] Link mengarah ke `https://wa.me/15550100?text=...`.
+  - [ ] Pesan mengandung nama produk dan harga terformat, mis. `Halo, saya mau pesan Bakso Beranak (Rp18.000).`
+  - [ ] Karakter pesan di-encode dengan `encodeURIComponent`.
+  - [ ] Nomor divalidasi E.164 (8–15 digit, awalan 1–9, `+` opsional) sebelum link dibuat; format `08...` lokal ditolak.
+  - [ ] Tombol dinonaktifkan saat `stok = 0`.
 - **Berkas yang mungkin berubah:** `src/ui.js`, `src/data.js`
 - **Trace:** F-06, AC-4, R-03
 
@@ -223,8 +224,8 @@
 - **AC:**
   - [ ] Klik ✎ mengisi form dengan data produk tersebut; setelah Simpan, perubahan tampil di tabel **dan** katalog.
   - [ ] Klik 🗑 memunculkan konfirmasi berisi nama produk; setelah disetujui produk hilang dari tabel dan katalog.
-  - [ ] Tombol Reset mengembalikan tepat 5 produk seed (angka 5 / 155 / 2).
-  - [ ] Tombol ikon memiliki `aria-label` unik, mis. "Ubah Bakso Sapi Spesial".
+  - [ ] Tombol Reset mengembalikan tepat 5 produk seed (angka 5 / 188 / 3).
+  - [ ] Tombol ikon memiliki `aria-label` unik, mis. "Ubah Bakso Beranak".
   - [ ] Toast sukses/error muncul di kanan bawah selama ~3 detik.
 - **Berkas yang mungkin berubah:** `src/app.js`, `src/ui.js`, `src/styles.css`
 - **Trace:** F-07, AC-5, R-01, UI-SPEC §5.6
@@ -241,7 +242,7 @@
 ### T-4.5 — Ringkasan live
 - **Deskripsi:** Hitung dan tampilkan total produk, total stok, jumlah unggulan; perbarui setelah setiap mutasi.
 - **AC:**
-  - [ ] Kondisi awal: `Total Produk: 5`, `Total Stok: 155`, `Unggulan: 2`.
+  - [ ] Kondisi awal: `Total Produk: 5`, `Total Stok: 188`, `Kategori: 3` + rincian `Makanan Utama 1`, `Snack 2`, `Minuman 2`.
   - [ ] Angka berubah langsung setelah tambah/ubah/hapus/reset tanpa refresh manual.
   - [ ] Tiga stat card memakai format angka besar `--ink-900` + label kecil `--ink-600`.
 - **Berkas yang mungkin berubah:** `src/app.js`, `src/ui.js`, `src/styles.css`
@@ -254,20 +255,21 @@
 ### T-5.1 — Modul baca/tulis terenkapulasi
 - **Deskripsi:** Satu tempat untuk semua akses `localStorage`, dibungkus `try/catch` sesuai NFR-12.
 - **AC:**
-  - [ ] Key `baksoenak.products.v1` menyimpan JSON array produk.
-  - [ ] Key `baksoenak.config.v1` menyimpan konfigurasi WA demo.
+  - [ ] Key `baksoenak:products:v1` menyimpan JSON array produk pada setiap mutasi.
+  - [ ] Key `baksoenak.config.v2` menyimpan konfigurasi WA demo E.164 (key `v1` lama diabaikan).
   - [ ] Tidak ada akses `localStorage` yang tersebar di modul UI.
   - [ ] Jika storage penuh/diblokir, aplikasi tidak crash dan muncul toast error.
-- **Berkas yang mungkin berubah:** `src/data.js`, `src/app.js`
+- **Berkas yang mungkin berubah:** `src/store.js`, `src/products.js`
 - **Trace:** F-09, NFR-12, R-05
 
-### T-5.2 — Inisialisasi & fallback seed
-- **Deskripsi:** Saat aplikasi dibuka, baca data; bila kosong atau korup, seed ulang 5 produk.
+### T-5.2 — Inisialisasi, validasi & fallback seed
+- **Deskripsi:** Saat aplikasi dibuka, `JSON.parse` dalam `try/catch`; validasi struktur dan tipe tiap field; bila rusak, beri pemberitahuan lalu seed ulang 5 produk.
 - **AC:**
-  - [ ] Pertama kali dibuka → 5 produk seed muncul dan tersimpan.
-  - [ ] JSON sengaja dirusak lewat DevTools → aplikasi tidak crash, kembali ke 5 seed.
-  - [ ] Seed tidak menimpa data yang sudah ada.
-- **Berkas yang mungkin berubah:** `src/data.js`, `src/main.js`
+  - [ ] Pertama kali dibuka → 5 produk seed muncul dan tersimpan (tanpa pemberitahuan rusak).
+  - [ ] Seed tidak menimpa data yang sudah valid, termasuk array kosong `[]`.
+  - [ ] JSON sengaja dirusak lewat DevTools (sintaks/bukan array/field hilang/tipe salah/nilai di luar aturan/id duplikat) → aplikasi tidak crash, kembali ke 5 seed, **toast + status inline** menyebut alasan, dan storage ditulis ulang.
+  - [ ] `parseProductsJson()` murni: tidak menyentuh DOM/localStorage, bisa diuji langsung dari Node.
+- **Berkas yang mungkin berubah:** `src/store.js`, `src/products.js`, `src/main.js`, `src/ui.js`
 - **Trace:** F-09, AC-7, AC-1, R-01
 
 ### T-5.3 — Persistensi CRUD
@@ -277,27 +279,38 @@
   - [ ] Hapus produk → tutup & buka ulang tab → produk tetap terhapus.
   - [ ] Reset → storage berisi kembali 5 produk seed.
   - [ ] Data yang gagal validasi tidak pernah tersimpan.
-- **Berkas yang mungkin berubah:** `src/data.js`, `src/app.js`
+- **Berkas yang mungkin berubah:** `src/store.js`, `src/main.js`
 - **Trace:** F-09, AC-7, AC-5
 
 ### T-5.4 — Penanganan kegagalan penyimpanan
 - **Deskripsi:** Beri umpan balik saat penulisan gagal tanpa menghentikan render.
 - **AC:**
-  - [ ] Toast: *"Gagal menyimpan, perubahan hanya di sesi ini."*
+  - [ ] Toast: *"Gagal menyimpan, perubahan hanya berlaku saat ini."*
   - [ ] Katalog tetap bisa dirender meski `localStorage` tidak tersedia.
   - [ ] Tidak ada uncaught exception di Console.
-- **Berkas yang mungkin berubah:** `src/data.js`, `src/app.js`, `src/ui.js`
-- **Trace:** R-05, F-10, AC-8
+- **Berkas yang mungkin berubah:** `src/store.js`, `src/main.js`, `src/ui.js`
+- **Trace:** R-05, F-10, AC-9
+
+### T-5.5 — Ekspor, impor, dan reset demo
+- **Deskripsi:** Sediakan alat data di dashboard: unduh JSON, impor JSON tervalidasi, dan reset ke seed.
+- **AC:**
+  - [ ] **Ekspor JSON** mengunduh `baksoenak-products.json` (Blob + `URL.createObjectURL`, tanpa server/fetch) berisi array produk saat ini.
+  - [ ] **Impor JSON** memakai `parseProductsJson()`; file valid → konfirmasi → timpa seluruh data → katalog & statistik berubah.
+  - [ ] File invalid → pesan error, data lama tidak berubah; `id` duplikat juga ditolak.
+  - [ ] Tombol impor membuka `<input type="file" accept="application/json,.json" hidden>`; input dikosongkan setelah dipakai agar file sama bisa diimpor ulang.
+  - [ ] **Reset ke Data Contoh** berkonfirmasi lalu menulis 5 seed; status inline diperbarui.
+- **Berkas yang mungkin berubah:** `index.html`, `src/products.js`, `src/main.js`, `src/ui.js`, `src/style.css`
+- **Trace:** AC-8, F-09
 
 ---
 
 ## M6 — Testing (Verifikasi Manual)
 
-### T-6.1 — Jalankan checklist AC-1…AC-8
+### T-6.1 — Jalankan checklist AC-1…AC-9
 - **Deskripsi:** Penguji manually mengeksekusi seluruh skenario di `SPEC.md` §8 dan menandai hasilnya.
 - **AC:**
-  - [ ] Semua kotak AC-1 sampai AC-8 tercentang.
-  - [ ] Angka uji cocok: 5 produk, 155 stok, 2 unggulan, 2 hasil pencarian `bakso`.
+  - [ ] Semua kotak AC-1 sampai AC-9 tercentang.
+  - [ ] Angka uji cocok: 5 produk, 188 stok, 3 kategori, 2 hasil pencarian `bakso`.
   - [ ] Tidak ada error/uncaught exception di Console selama seluruh skenario.
   - [ ] Hasil dicatat di `TASKS.md` / `README.md` sebagai catatan uji.
 - **Berkas yang mungkin berubah:** `TASKS.md`, `README.md`
@@ -330,7 +343,7 @@
 - **Deskripsi:** Pastikan tidak ada API key/token/secret maupun data pribadi di seluruh proyek.
 - **AC:**
   - [ ] Pencarian `apiKey`, `secret`, `token`, `password` tidak menemukan nilai kredensial.
-  - [ ] Nomor WA adalah placeholder `081200000000`, bukan nomor asli.
+  - [ ] Nomor WA adalah placeholder fiktif `15550100` (+1 555-0100, rentang cadangan NANP 555-01xx), bukan nomor/akun siapa pun.
   - [ ] Seluruh nama produk/harga/stok bersifat fiksi.
   - [ ] Tidak ada file `.env` dengan nilai sensitif yang ikut ter-commit.
 - **Berkas yang mungkin berubah:** `src/data.js`, `README.md`, `.gitignore`, `TASKS.md`

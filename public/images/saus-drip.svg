@@ -1,6 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 28" fill="none">
-  <path d="M0 4H240" stroke="#C62828" stroke-width="4" stroke-linecap="round"/>
-  <path d="M40 4c0 10 4 16 8 16s8-6 8-16" fill="#D32F2F"/>
-  <path d="M112 4c0 14 5 22 10 22s10-8 10-22" fill="#D32F2F"/>
-  <path d="M188 4c0 8 3 13 6 13s6-5 6-13" fill="#D32F2F"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" fill="none">
+  <!-- Pita saus merah dengan tepak bawah berombak -->
+  <path d="M0 0H240V11C222 14.5 204 7.5 186 11.5C168 15.5 150 8.5 132 12.5C114 16.5 96 9.5 78 13.5C60 17.5 42 10.5 24 14.5C16 16.2 8 15.4 0 13Z" fill="#C62828"/>
+  <!-- Tepi gelap memberi kesan saus mengental -->
+  <path d="M0 11C8 15.4 16 16.2 24 14.5C42 10.5 60 17.5 78 13.5C96 9.5 114 16.5 132 12.5C150 8.5 168 15.5 186 11.5C204 7.5 222 14.5 240 11V15C222 18.5 204 11.5 186 15.5C168 19.5 150 12.5 132 16.5C114 20.5 96 13.5 78 17.5C60 21.5 42 14.5 24 18.5C16 20.2 8 19.4 0 17Z" fill="#8E1B1B" opacity="0.28"/>
+  <!-- Kilau basah di pita atas -->
+  <path d="M0 2C40 5 80 1 120 4C160 7 200 3 240 5V8C200 6 160 10 120 7C80 4 40 8 0 5Z" fill="#EF5350" opacity="0.45"/>
+
+  <!-- Tetesan dengan panjang berbeda-beda, ujung membulat -->
+  <path d="M11 12V21C11 31 21 31 21 21V12Z" fill="#D32F2F"/>
+  <path d="M39 13V16C39 23 45 23 45 16V13Z" fill="#D32F2F"/>
+  <path d="M61 12V39C61 51 75 51 75 39V12Z" fill="#D32F2F"/>
+  <path d="M90 13V20C90 29 98 29 98 20V13Z" fill="#D32F2F"/>
+  <path d="M116 12V46C116 59 128 59 128 46V12Z" fill="#D32F2F"/>
+  <path d="M147 13V17C147 24 153 24 153 17V13Z" fill="#D32F2F"/>
+  <path d="M170 12V32C170 44 182 44 182 32V12Z" fill="#D32F2F"/>
+  <path d="M200 13V15C200 22 208 22 208 15V13Z" fill="#D32F2F"/>
+  <path d="M223 12V26C223 37 233 37 233 26V12Z" fill="#D32F2F"/>
+
+  <!-- Kilau tipis pada tetesan panjang -->
+  <path d="M64 14V36C64 42 66 44 68 45C66 42 66 38 66 34V14Z" fill="#FFCDD2" opacity="0.35"/>
+  <path d="M119 14V43C119 49 120 51 122 53C120 50 120 46 120 42V14Z" fill="#FFCDD2" opacity="0.35"/>
+  <path d="M173 14V29C173 34 174 36 176 38C174 35 174 32 174 28V14Z" fill="#FFCDD2" opacity="0.3"/>
+
+  <!-- Embun di ujung tetesan terpanjang -->
+  <ellipse cx="122" cy="53" rx="7.5" ry="5" fill="#D32F2F"/>
+  <ellipse cx="120" cy="51" rx="2.5" ry="1.6" fill="#FFCDD2" opacity="0.5"/>
+
+  <!-- Tetesan lepas dan percikan kecil -->
+  <path d="M70 49C67.5 52.5 66.5 54 66.5 55.5A3.5 3.5 0 0 0 73.5 55.5C73.5 54 72.5 52.5 70 49Z" fill="#C62828"/>
+  <path d="M178 48C176.2 50.8 175.4 52 175.4 53.2A2.6 2.6 0 0 0 180.6 53.2C180.6 52 179.8 50.8 178 48Z" fill="#C62828"/>
+  <path d="M16 36C14.5 38 14 39 14 40A2 2 0 0 0 18 40C18 39 17.5 38 16 36Z" fill="#C62828"/>
+  <circle cx="52" cy="32" r="1.8" fill="#D32F2F" opacity="0.85"/>
+  <circle cx="104" cy="45" r="1.5" fill="#D32F2F" opacity="0.85"/>
+  <circle cx="196" cy="37" r="2" fill="#D32F2F" opacity="0.85"/>
+  <circle cx="232" cy="47" r="1.5" fill="#D32F2F" opacity="0.85"/>
 </svg>

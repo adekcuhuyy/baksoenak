@@ -44,6 +44,11 @@
           <img class="hero__saus" src="images/saus-drip.svg" alt="" aria-hidden="true" />
         </div>
 
+        <section class="categories" aria-label="Kategori menu">
+          <p class="categories__label">Jelajahi kategori menu</p>
+          <div id="categoryStrip" class="categories__list"></div>
+        </section>
+
         <section id="katalog-list" class="catalog" aria-labelledby="catalog-title">
           <div class="section-head">
             <div>
@@ -100,10 +105,21 @@
             </h2>
             <p class="muted">Data di perangkat ini bersifat demo dan tidak tersinkron ke server.</p>
           </div>
-          <button id="resetButton" type="button" class="btn btn--outline">
-            ↺ Reset ke Data Contoh
-          </button>
+          <div class="dashboard-actions">
+            <button id="exportButton" type="button" class="btn btn--outline">
+              ↧ Ekspor JSON
+            </button>
+            <button id="importButton" type="button" class="btn btn--outline">
+              ↥ Impor JSON
+            </button>
+            <input id="importFile" type="file" accept="application/json,.json" hidden />
+            <button id="resetButton" type="button" class="btn btn--outline">
+              ↺ Reset ke Data Contoh
+            </button>
+          </div>
         </div>
+
+        <p id="dataStatus" class="data-status muted" role="status" aria-live="polite"></p>
 
         <div class="summary" aria-label="Ringkasan produk">
           <article class="stat">
@@ -112,13 +128,21 @@
           </article>
           <article class="stat">
             <p class="stat__label">Total Stok</p>
-            <p id="statStock" class="stat__value">155</p>
+            <p id="statStock" class="stat__value">188</p>
           </article>
           <article class="stat">
-            <p class="stat__label">Unggulan</p>
-            <p id="statFeatured" class="stat__value">2</p>
+            <p class="stat__label">Kategori</p>
+            <p id="statCategories" class="stat__value">3</p>
           </article>
         </div>
+
+        <section class="panel panel--categories" aria-labelledby="categorySummary-title">
+          <div class="panel__head">
+            <h3 id="categorySummary-title">Kategori Menu</h3>
+            <span id="categoryCount" class="muted">(3)</span>
+          </div>
+          <div id="categoryBreakdown" class="category-breakdown"></div>
+        </section>
 
         <div class="dashboard-layout">
           <section class="panel" aria-labelledby="form-title">
@@ -152,7 +176,7 @@
                   name="harga"
                   type="number"
                   min="0"
-                  step="1"
+                  step="any"
                   required
                   aria-describedby="err-harga"
                 />

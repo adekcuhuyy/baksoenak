@@ -1,6 +1,12 @@
 // ui.js — semua fungsi render DOM. Data dinamis selalu ditulis dengan textContent.
 
-import { CATEGORIES, SORT_OPTIONS, assetUrl, formatRupiah } from './products.js';
+import {
+  CATEGORIES,
+  SORT_OPTIONS,
+  assetUrl,
+  buildWhatsAppUrl,
+  formatRupiah,
+} from './products.js';
 import { getWhatsappNumber } from './store.js';
 
 const byId = (id) => document.getElementById(id);
@@ -18,11 +24,6 @@ function stockLabel(stok) {
   return stok > 0 ? `Stok: ${stok}` : 'Stok: Habis';
 }
 
-function whatsappHref(product) {
-  const message = `Halo, saya mau pesan ${product.nama} (${formatRupiah(product.harga)}).`;
-  return `https://wa.me/${getWhatsappNumber()}?text=${encodeURIComponent(message)}`;
-}
-
 function createImage(product) {
   const image = node('img', 'card__image');
   image.src = assetUrl(product.imageUrl);
@@ -37,16 +38,45 @@ function createImage(product) {
 }
 
 function createWhatsappButton(product) {
-  const link = node('a', 'btn btn--wa');
-  link.href = whatsappHref(product);
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-  link.setAttribute('aria-label', `Pesan ${product.nama} via WhatsApp`);
+  const soldOut = Number(product.stok) <= 0;
+
+  // buildWhatsAppUrl memvalidasi nomor config; bila invalid, tombol tetap
+  // tampil tetapi nonaktif — tidak pernah menghasilkan deeplink rusak.
+  let href = '';
+  let configError = '';
+  try {
+    href = buildWhatsAppUrl(getWhatsappNumber(), product);
+  } catch {
+    configError = 'Nomor WhatsApp penjual belum dikonfigurasi.';
+  }
+
+  const disabled = soldOut || Boolean(configError);
+  const control = disabled
+    ? node('button', 'btn btn--wa btn--wa--disabled')
+    : node('a', 'btn btn--wa');
+
+  if (disabled) {
+    control.type = 'button';
+    control.disabled = true;
+    control.title = soldOut ? 'Stok habis' : configError;
+  } else {
+    control.href = href;
+    control.target = '_blank';
+    control.rel = 'noopener noreferrer';
+  }
+
+  const reason = soldOut ? 'stok habis' : configError;
+  control.setAttribute(
+    'aria-label',
+    disabled
+      ? `Pesan ${product.nama} tidak tersedia (${reason})`
+      : `Pesan ${product.nama} via WhatsApp`,
+  );
 
   const icon = node('span', 'btn__icon', '🟢');
   icon.setAttribute('aria-hidden', 'true');
-  link.append(icon, node('span', '', 'Pesan via WhatsApp'));
-  return link;
+  control.append(icon, node('span', '', 'Pesan via WhatsApp'));
+  return control;
 }
 
 export function createProductCard(product) {
@@ -84,6 +114,14 @@ export function populateControls() {
     categoryFilter.appendChild(option);
   });
 
+  // Strip kategori di landing page memakai sumber yang sama dengan filter.
+  const categoryStrip = byId('categoryStrip');
+  if (categoryStrip) {
+    CATEGORIES.forEach((category) => {
+      categoryStrip.appendChild(node('span', 'category-chip', category));
+    });
+  }
+
   const sortSelect = byId('sortSelect');
   SORT_OPTIONS.forEach((item) => {
     const option = node('option', '', item.label);
@@ -115,11 +153,27 @@ export function renderResultCount(visible, total) {
 
 export function renderSummary(products) {
   const totalStok = products.reduce((sum, product) => sum + product.stok, 0);
-  const totalUnggulan = products.filter((product) => product.unggulan).length;
+
+  // Hitung kategori yang benar-benar dipakai, bukan sekadar jumlah enum.
+  const counts = new Map();
+  products.forEach((product) => {
+    counts.set(product.kategori, (counts.get(product.kategori) || 0) + 1);
+  });
+
   byId('statProducts').textContent = String(products.length);
   byId('statStock').textContent = String(totalStok);
-  byId('statFeatured').textContent = String(totalUnggulan);
+  byId('statCategories').textContent = String(counts.size);
+  byId('categoryCount').textContent = `(${counts.size})`;
   byId('listCount').textContent = `(${products.length})`;
+
+  const breakdown = byId('categoryBreakdown');
+  breakdown.replaceChildren();
+  CATEGORIES.filter((category) => counts.has(category)).forEach((category) => {
+    const item = node('span', 'category-breakdown__item');
+    item.appendChild(node('span', '', category));
+    item.appendChild(node('span', 'category-breakdown__count', String(counts.get(category))));
+    breakdown.appendChild(item);
+  });
 }
 
 function createActionButtons(product, handlers) {
@@ -254,6 +308,13 @@ export function showToast(message) {
   toastTimer = setTimeout(() => {
     toast.hidden = true;
   }, 3000);
+}
+
+/** Status aksi data (ekspor/impor/reset/pemulihan) yang tetap terlihat. */
+export function showDataStatus(message, isError = false) {
+  const status = byId('dataStatus');
+  status.textContent = message;
+  status.classList.toggle('data-status--error', Boolean(isError && message));
 }
 
 export function setView(view) {
