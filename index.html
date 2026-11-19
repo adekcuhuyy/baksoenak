@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Katalog produk Bakso Enak — demo UMKM makanan dan minuman berbasis web."
+    />
+    <link rel="icon" type="image/svg+xml" href="images/placeholder.svg" />
+    <title>Bakso Enak — Katalog Menu</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#katalog">Lewati ke katalog</a>
+
+    <header class="navbar">
+      <div class="container navbar__inner">
+        <a class="brand" href="#katalog" data-view-link="katalog">
+          <span class="brand__icon" aria-hidden="true">🍜</span>
+          <span class="brand__name">Bakso Enak</span>
+        </a>
+        <nav class="nav" aria-label="Navigasi utama">
+          <a class="nav__link" href="#katalog" data-view-link="katalog">Katalog</a>
+          <a class="nav__link" href="#dashboard" data-view-link="dashboard">
+            Dashboard <span class="chip chip--demo">DEMO</span>
+          </a>
+        </nav>
+      </div>
+      <img class="navbar__drip" src="images/saus-drip.svg" alt="" aria-hidden="true" />
+    </header>
+
+    <main id="main" class="container">
+      <section id="katalog" class="view" data-view-panel="katalog" tabindex="-1">
+        <div class="hero">
+          <div class="hero__content">
+            <p class="hero__eyebrow">UMKM kuliner pilihan</p>
+            <h1>Bakso Enak, hangat di setiap suap.</h1>
+            <p class="hero__lead">Menu andalan UMKM, dibuat segar setiap hari.</p>
+            <div class="hero__actions">
+              <a class="btn btn--primary" href="#katalog-list">Lihat Menu ↓</a>
+              <span class="hero__note"><span aria-hidden="true">⭐</span> 5 menu andalan</span>
+            </div>
+          </div>
+          <img class="hero__saus" src="images/saus-drip.svg" alt="" aria-hidden="true" />
+        </div>
+
+        <section id="katalog-list" class="catalog" aria-labelledby="catalog-title">
+          <div class="section-head">
+            <div>
+              <h2 id="catalog-title">Katalog Menu</h2>
+              <p id="resultCount" class="section-head__meta">Menampilkan 5/5 menu</p>
+            </div>
+          </div>
+
+          <div class="toolbar" role="search">
+            <div class="field field--search">
+              <label for="searchInput">Cari menu</label>
+              <div class="input-wrap">
+                <span class="input-wrap__icon" aria-hidden="true">🔍</span>
+                <input
+                  id="searchInput"
+                  type="search"
+                  placeholder="Cari nama atau deskripsi..."
+                  autocomplete="off"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label for="categoryFilter">Kategori</label>
+              <select id="categoryFilter"></select>
+            </div>
+            <div class="field">
+              <label for="sortSelect">Urutkan</label>
+              <select id="sortSelect"></select>
+            </div>
+          </div>
+
+          <div id="productGrid" class="product-grid" aria-live="polite"></div>
+
+          <div id="emptyState" class="empty-state" hidden>
+            <div class="empty-state__icon" aria-hidden="true">🍲</div>
+            <h3>Menu tidak ditemukan</h3>
+            <p>Coba kata kunci atau kategori lain.</p>
+            <button id="clearFilters" type="button" class="btn btn--outline">Hapus Filter</button>
+          </div>
+        </section>
+      </section>
+
+      <section
+        id="dashboard"
+        class="view"
+        data-view-panel="dashboard"
+        hidden
+        aria-labelledby="dashboard-title"
+      >
+        <div class="dashboard-head">
+          <div>
+            <h2 id="dashboard-title">
+              Dashboard Demo — Mode Pengelola <span class="chip chip--demo">DEMO</span>
+            </h2>
+            <p class="muted">Data di perangkat ini bersifat demo dan tidak tersinkron ke server.</p>
+          </div>
+          <button id="resetButton" type="button" class="btn btn--outline">
+            ↺ Reset ke Data Contoh
+          </button>
+        </div>
+
+        <div class="summary" aria-label="Ringkasan produk">
+          <article class="stat">
+            <p class="stat__label">Total Produk</p>
+            <p id="statProducts" class="stat__value">5</p>
+          </article>
+          <article class="stat">
+            <p class="stat__label">Total Stok</p>
+            <p id="statStock" class="stat__value">155</p>
+          </article>
+          <article class="stat">
+            <p class="stat__label">Unggulan</p>
+            <p id="statFeatured" class="stat__value">2</p>
+          </article>
+        </div>
+
+        <div class="dashboard-layout">
+          <section class="panel" aria-labelledby="form-title">
+            <h3 id="form-title">Form Produk</h3>
+            <form id="productForm" novalidate>
+              <div class="field">
+                <label for="fieldNama">Nama <span class="required" aria-hidden="true">*</span></label>
+                <input
+                  id="fieldNama"
+                  name="nama"
+                  type="text"
+                  maxlength="80"
+                  required
+                  aria-describedby="err-nama"
+                />
+                <small id="err-nama" class="field__error" data-error-for="nama"></small>
+              </div>
+
+              <div class="field">
+                <label for="fieldKategori">
+                  Kategori <span class="required" aria-hidden="true">*</span>
+                </label>
+                <select id="fieldKategori" name="kategori" required aria-describedby="err-kategori"></select>
+                <small id="err-kategori" class="field__error" data-error-for="kategori"></small>
+              </div>
+
+              <div class="field">
+                <label for="fieldHarga">Harga (Rp) <span class="required" aria-hidden="true">*</span></label>
+                <input
+                  id="fieldHarga"
+                  name="harga"
+                  type="number"
+                  min="0"
+                  step="1"
+                  required
+                  aria-describedby="err-harga"
+                />
+                <small id="err-harga" class="field__error" data-error-for="harga"></small>
+              </div>
+
+              <div class="field">
+                <label for="fieldStok">Stok <span class="required" aria-hidden="true">*</span></label>
+                <input
+                  id="fieldStok"
+                  name="stok"
+                  type="number"
+                  min="0"
+                  step="1"
+                  required
+                  aria-describedby="err-stok"
+                />
+                <small id="err-stok" class="field__error" data-error-for="stok"></small>
+              </div>
+
+              <div class="field">
+                <label for="fieldDeskripsi">
+                  Deskripsi <span class="required" aria-hidden="true">*</span>
+                </label>
+                <textarea
+                  id="fieldDeskripsi"
+                  name="deskripsi"
+                  rows="3"
+                  maxlength="200"
+                  required
+                  aria-describedby="err-deskripsi"
+                ></textarea>
+                <small id="err-deskripsi" class="field__error" data-error-for="deskripsi"></small>
+              </div>
+
+              <div class="field field--checkbox">
+                <label class="checkbox" for="fieldUnggulan">
+                  <input id="fieldUnggulan" name="unggulan" type="checkbox" />
+                  <span>Jadikan produk unggulan</span>
+                </label>
+                <small id="err-unggulan" class="field__error" data-error-for="unggulan"></small>
+              </div>
+
+              <div class="field">
+                <label for="fieldImageUrl">
+                  Image URL <span class="required" aria-hidden="true">*</span>
+                </label>
+                <input
+                  id="fieldImageUrl"
+                  name="imageUrl"
+                  type="text"
+                  placeholder="images/bakso.svg"
+                  required
+                  aria-describedby="err-imageUrl"
+                />
+                <small id="err-imageUrl" class="field__error" data-error-for="imageUrl"></small>
+              </div>
+
+              <div class="form-actions">
+                <button id="submitButton" class="btn btn--primary" type="submit">Simpan</button>
+                <button id="cancelButton" class="btn btn--outline" type="button">Batal</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel" aria-labelledby="list-title">
+            <div class="panel__head">
+              <h3 id="list-title">Daftar Produk</h3>
+              <span id="listCount" class="muted">(5)</span>
+            </div>
+            <div id="productTableWrap"></div>
+            <div id="productCardsWrap" class="mobile-product-list"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        © 2026 Bakso Enak — Demo latihan. Data fiksi, bukan transaksi nyata.
+      </div>
+    </footer>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

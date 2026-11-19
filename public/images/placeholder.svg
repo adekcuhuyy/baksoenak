@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#F1E3CC"/>
+  <circle cx="200" cy="142" r="86" fill="#FFFBF3" stroke="#E7D5BC" stroke-width="6"/>
+  <path d="M152 158c20 24 76 24 96 0" stroke="#C62828" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <text x="200" y="120" text-anchor="middle" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#6B4F3F">Bakso Enak</text>
+  <text x="200" y="262" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#6B4F3F">Ilustrasi tidak tersedia</text>
+</svg>
